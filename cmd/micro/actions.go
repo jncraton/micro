@@ -132,7 +132,7 @@ func (v *View) DoActions(actions string) bool {
 		if ok {
 			success = coreAction(v,true) && success
 		} else {
-			LuaFunctionBinding(action)(v, true)
+			success = LuaAction(action) && success
 		}
 	}
 
