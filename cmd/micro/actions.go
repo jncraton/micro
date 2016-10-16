@@ -124,26 +124,27 @@ func PostActionCall(funcName string, view *View) bool {
 	return relocate
 }
 
-func (v *View) DoCoreAction(fn func(*View) bool, action string) {
+// DoCoreAction calls a core action and the appropriate plugins
+func (v *View) DoCoreAction(fn func(*View) bool, action string) bool {
 	if PreActionCall(action, v) {
-		fn(v)
+		ret := fn(v)
+		PostActionCall(action, v)
+		return ret
+	} else {
+		return false
 	}
-	PostActionCall(action, v)
 }
 
 func (v *View) DoActions(actions string) bool {
-	relocate := true
+	relocate := false
 
 	for _, action := range strings.Split(actions, ",") {
-		if PreActionCall(action, v) {
-			coreAction, ok := actionToFn[action]
-			if ok {
-				relocate = coreAction(v) || relocate
-			} else {
-				relocate = LuaAction(action) || relocate
-			}
+		coreAction, ok := actionToFn[action]
+		if ok {
+			relocate = v.DoCoreAction(coreAction, action) || relocate
+		} else {
+			relocate = LuaAction(action) || relocate
 		}
-		relocate = PostActionCall(action, v) || relocate
 	}
 
 	return relocate
