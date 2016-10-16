@@ -128,12 +128,15 @@ func (v *View) DoActions(actions string) bool {
 	success := true
 
 	for _, action := range strings.Split(actions, ",") {
-		coreAction, ok := actionToFn[action]
-		if ok {
-			success = coreAction(v,true) && success
-		} else {
-			success = LuaAction(action) && success
+		if PreActionCall(action, v) {
+			coreAction, ok := actionToFn[action]
+			if ok {
+				success = coreAction(v,true) && success
+			} else {
+				success = LuaAction(action) && success
+			}
 		}
+		success = PostActionCall(action, v) && success
 	}
 
 	return success
