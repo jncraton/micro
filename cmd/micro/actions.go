@@ -125,6 +125,8 @@ func PostActionCall(funcName string, view *View) bool {
 }
 
 // DoCoreAction calls a core action and the appropriate plugins
+// It requires both a function pointer as well as the name of the action
+// because the action to function map isn't available at this level
 func (v *View) DoCoreAction(fn func(*View) bool, action string) bool {
 	if PreActionCall(action, v) {
 		ret := fn(v)
@@ -135,6 +137,7 @@ func (v *View) DoCoreAction(fn func(*View) bool, action string) bool {
 	}
 }
 
+// Performs view actions (e.g. "IndentSelection,InsertTab")
 func (v *View) DoActions(actions string) bool {
 	relocate := false
 
