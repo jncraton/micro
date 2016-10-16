@@ -868,7 +868,7 @@ func (v *View) OpenFile() bool {
 // Start moves the viewport to the start of the buffer
 func (v *View) Start() bool {
 	v.Topline = 0
-	return true
+	return false
 }
 
 // End moves the viewport to the end of the buffer
@@ -879,7 +879,7 @@ func (v *View) End() bool {
 		v.Topline = v.Buf.NumLines - v.height
 	}
 
-	return true
+	return false
 }
 
 // PageUp scrolls the view up a page
