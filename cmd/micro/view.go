@@ -200,7 +200,7 @@ func (v *View) CanClose() bool {
 		}
 		if !canceled {
 			if char == 'y' {
-				v.Save(true)
+				v.DoCoreAction((*View).Save, "Save")
 				return true
 			} else if char == 'n' {
 				return true
@@ -223,7 +223,7 @@ func (v *View) OpenBuffer(buf *Buffer) {
 	v.leftCol = 0
 	v.Cursor.ResetSelection()
 	v.Relocate()
-	v.Center(false)
+	v.Center()
 	v.messages = make(map[string][]GutterMessage)
 
 	v.matches = Match(v)
@@ -515,7 +515,7 @@ func (v *View) HandleEvent(event tcell.Event) {
 		case tcell.Button2:
 			// Middle mouse button was clicked,
 			// We should paste primary
-			v.PastePrimary(true)
+			v.DoCoreAction((*View).PastePrimary, "PastePrimary")
 		case tcell.ButtonNone:
 			// Mouse event with no click
 			if !v.mouseReleased {
