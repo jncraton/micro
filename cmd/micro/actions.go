@@ -10,6 +10,88 @@ import (
 	"github.com/zyedidia/clipboard"
 )
 
+
+var actionToFn = map[string]func(*View, bool) bool{
+	"CursorUp":            (*View).CursorUp,
+	"CursorDown":          (*View).CursorDown,
+	"CursorPageUp":        (*View).CursorPageUp,
+	"CursorPageDown":      (*View).CursorPageDown,
+	"CursorLeft":          (*View).CursorLeft,
+	"CursorRight":         (*View).CursorRight,
+	"CursorStart":         (*View).CursorStart,
+	"CursorEnd":           (*View).CursorEnd,
+	"SelectToStart":       (*View).SelectToStart,
+	"SelectToEnd":         (*View).SelectToEnd,
+	"SelectUp":            (*View).SelectUp,
+	"SelectDown":          (*View).SelectDown,
+	"SelectLeft":          (*View).SelectLeft,
+	"SelectRight":         (*View).SelectRight,
+	"WordRight":           (*View).WordRight,
+	"WordLeft":            (*View).WordLeft,
+	"SelectWordRight":     (*View).SelectWordRight,
+	"SelectWordLeft":      (*View).SelectWordLeft,
+	"DeleteWordRight":     (*View).DeleteWordRight,
+	"DeleteWordLeft":      (*View).DeleteWordLeft,
+	"SelectToStartOfLine": (*View).SelectToStartOfLine,
+	"SelectToEndOfLine":   (*View).SelectToEndOfLine,
+	"InsertNewline":       (*View).InsertNewline,
+	"InsertSpace":         (*View).InsertSpace,
+	"Backspace":           (*View).Backspace,
+	"Delete":              (*View).Delete,
+	"InsertTab":           (*View).InsertTab,
+	"Save":                (*View).Save,
+	"Find":                (*View).Find,
+	"FindNext":            (*View).FindNext,
+	"FindPrevious":        (*View).FindPrevious,
+	"Center":              (*View).Center,
+	"Undo":                (*View).Undo,
+	"Redo":                (*View).Redo,
+	"Copy":                (*View).Copy,
+	"Cut":                 (*View).Cut,
+	"CutLine":             (*View).CutLine,
+	"DuplicateLine":       (*View).DuplicateLine,
+	"DeleteLine":          (*View).DeleteLine,
+	"MoveLinesUp":         (*View).MoveLinesUp,
+	"MoveLinesDown":       (*View).MoveLinesDown,
+	"IndentSelection":     (*View).IndentSelection,
+	"OutdentSelection":    (*View).OutdentSelection,
+	"OutdentLine":         (*View).OutdentLine,
+	"Paste":               (*View).Paste,
+	"PastePrimary":        (*View).PastePrimary,
+	"SelectAll":           (*View).SelectAll,
+	"OpenFile":            (*View).OpenFile,
+	"Start":               (*View).Start,
+	"End":                 (*View).End,
+	"PageUp":              (*View).PageUp,
+	"PageDown":            (*View).PageDown,
+	"HalfPageUp":          (*View).HalfPageUp,
+	"HalfPageDown":        (*View).HalfPageDown,
+	"StartOfLine":         (*View).StartOfLine,
+	"EndOfLine":           (*View).EndOfLine,
+	"ToggleHelp":          (*View).ToggleHelp,
+	"ToggleRuler":         (*View).ToggleRuler,
+	"JumpLine":            (*View).JumpLine,
+	"ClearStatus":         (*View).ClearStatus,
+	"ShellMode":           (*View).ShellMode,
+	"CommandMode":         (*View).CommandMode,
+	"Escape":              (*View).Escape,
+	"Quit":                (*View).Quit,
+	"QuitAll":             (*View).QuitAll,
+	"AddTab":              (*View).AddTab,
+	"PreviousTab":         (*View).PreviousTab,
+	"NextTab":             (*View).NextTab,
+	"NextSplit":           (*View).NextSplit,
+	"PreviousSplit":       (*View).PreviousSplit,
+	"Unsplit":             (*View).Unsplit,
+	"VSplit":              (*View).VSplitBinding,
+	"HSplit":              (*View).HSplitBinding,
+	"ToggleMacro":         (*View).ToggleMacro,
+	"PlayMacro":           (*View).PlayMacro,
+
+	// This was changed to InsertNewline but I don't want to break backwards compatibility
+	"InsertEnter": (*View).InsertNewline,
+}
+
 // PreActionCall executes the lua pre callback if possible
 func PreActionCall(funcName string, view *View) bool {
 	executeAction := true
@@ -40,6 +122,21 @@ func PostActionCall(funcName string, view *View) bool {
 		}
 	}
 	return relocate
+}
+
+func (v *View) DoActions(actions string) bool {
+	success := true
+
+	for _, action := range strings.Split(actions, ",") {
+		coreAction, ok := actionToFn[action]
+		if ok {
+			success = coreAction(v,true) && success
+		} else {
+			LuaFunctionBinding(action)(v, true)
+		}
+	}
+
+	return success
 }
 
 func (v *View) deselect(index int) bool {

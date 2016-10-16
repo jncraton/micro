@@ -408,10 +408,9 @@ func (v *View) HandleEvent(event tcell.Event) {
 					if e.Modifiers() == key.modifiers {
 						relocate = false
 						isBinding = true
-						for _, action := range actions {
-							relocate = action(v, true) || relocate
-							funcName := FuncName(action)
-							if funcName != "main.(*View).ToggleMacro" && funcName != "main.(*View).PlayMacro" {
+						relocate = v.DoActions(actions) || relocate
+						for _, action := range strings.Split(actions, ",") {
+							if action != "ToggleMacro" && action != "PlayMacro" {
 								if recordingMacro {
 									curMacro = append(curMacro, action)
 								}
