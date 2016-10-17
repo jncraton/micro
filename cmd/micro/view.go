@@ -200,7 +200,7 @@ func (v *View) CanClose() bool {
 		}
 		if !canceled {
 			if char == 'y' {
-				v.DoCoreAction((*View).Save, "Save")
+				v.DoActions("Save")
 				return true
 			} else if char == 'n' {
 				return true
@@ -515,7 +515,7 @@ func (v *View) HandleEvent(event tcell.Event) {
 		case tcell.Button2:
 			// Middle mouse button was clicked,
 			// We should paste primary
-			v.DoCoreAction((*View).PastePrimary, "PastePrimary")
+			v.DoActions("PastePrimary")
 		case tcell.ButtonNone:
 			// Mouse event with no click
 			if !v.mouseReleased {

@@ -43,18 +43,6 @@ func PostActionCall(funcName string, view *View) bool {
 	return relocate
 }
 
-// DoCoreAction calls a core action and the appropriate plugins
-// It requires both a function pointer as well as the name of the action
-// because the action to function map isn't available at this level
-func (v *View) DoCoreAction(fn func(*View) bool, action string) bool {
-	if PreActionCall(action, v) {
-		relocate := fn(v)
-		return PostActionCall(action, v) || relocate
-	}
-	
-	return false
-}
-
 // DoActions Performs view actions (e.g. "IndentSelection,InsertTab")
 func (v *View) DoActions(actions string) bool {
 	relocate := false
@@ -62,7 +50,11 @@ func (v *View) DoActions(actions string) bool {
 	for _, action := range strings.Split(actions, ",") {
 		_, ok := reflect.TypeOf(v).MethodByName(action)
 		if ok {
-			relocate = reflect.ValueOf(v).MethodByName(action).Call([]reflect.Value{})[0].Bool() || relocate
+			if PreActionCall(action, v) {
+				fn := reflect.ValueOf(v).MethodByName(action)
+				relocate = fn.Call([]reflect.Value{})[0].Bool() || relocate
+				relocate = PostActionCall(action, v) || relocate
+			}
 		} else {
 			relocate = LuaAction(action) || relocate
 		}
@@ -539,7 +531,7 @@ func (v *View) SaveAs() bool {
 		v.Buf.Path = filename
 		v.Buf.Name = filename
 
-		v.DoCoreAction((*View).Save, "Save")
+		v.DoActions("Save")
 	}
 
 	return false
@@ -631,7 +623,7 @@ func (v *View) CutLine() bool {
 			}
 		}
 	} else if time.Since(v.lastCutTime)/time.Second > 10*time.Second || v.freshClip == false {
-		v.DoCoreAction((*View).Copy, "Copy")
+		v.DoActions("Copy")
 	}
 	v.freshClip = true
 	v.lastCutTime = time.Now()
@@ -929,7 +921,7 @@ func (v *View) ToggleHelp() bool {
 		// Open the default help
 		v.openHelp("help")
 	} else {
-		v.DoCoreAction((*View).Quit, "Quit")
+		v.DoActions("Quit")
 	}
 
 	return true
@@ -1090,8 +1082,7 @@ func (v *View) Unsplit() bool {
 	for i := len(tabs[curTab].views) - 1; i >= 0; i-- {
 		view := tabs[curTab].views[i]
 		if view != nil && view.Num != curView {
-			v.DoCoreAction((*View).Quit, "Quit")
-			// messenger.Message("Quit ", view.Buf.Path)
+			v.DoActions("Quit")
 		}
 	}
 
