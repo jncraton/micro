@@ -5,92 +5,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"reflect"
 
 	"github.com/yuin/gopher-lua"
 	"github.com/zyedidia/clipboard"
 )
-
-
-var actionToFn = map[string]func(*View) bool{
-	"CursorUp":            (*View).CursorUp,
-	"CursorDown":          (*View).CursorDown,
-	"CursorPageUp":        (*View).CursorPageUp,
-	"CursorPageDown":      (*View).CursorPageDown,
-	"CursorLeft":          (*View).CursorLeft,
-	"CursorRight":         (*View).CursorRight,
-	"CursorStart":         (*View).CursorStart,
-	"CursorEnd":           (*View).CursorEnd,
-	"SelectToStart":       (*View).SelectToStart,
-	"SelectToEnd":         (*View).SelectToEnd,
-	"SelectUp":            (*View).SelectUp,
-	"SelectDown":          (*View).SelectDown,
-	"SelectLeft":          (*View).SelectLeft,
-	"SelectRight":         (*View).SelectRight,
-	"WordRight":           (*View).WordRight,
-	"WordLeft":            (*View).WordLeft,
-	"SelectWordRight":     (*View).SelectWordRight,
-	"SelectWordLeft":      (*View).SelectWordLeft,
-	"DeleteWordRight":     (*View).DeleteWordRight,
-	"DeleteWordLeft":      (*View).DeleteWordLeft,
-	"SelectToStartOfLine": (*View).SelectToStartOfLine,
-	"SelectToEndOfLine":   (*View).SelectToEndOfLine,
-	"InsertNewline":       (*View).InsertNewline,
-	"InsertSpace":         (*View).InsertSpace,
-	"Backspace":           (*View).Backspace,
-	"Delete":              (*View).Delete,
-	"InsertTab":           (*View).InsertTab,
-	"Save":                (*View).Save,
-	"Find":                (*View).Find,
-	"FindNext":            (*View).FindNext,
-	"FindPrevious":        (*View).FindPrevious,
-	"Center":              (*View).Center,
-	"Undo":                (*View).Undo,
-	"Redo":                (*View).Redo,
-	"Copy":                (*View).Copy,
-	"Cut":                 (*View).Cut,
-	"CutLine":             (*View).CutLine,
-	"DuplicateLine":       (*View).DuplicateLine,
-	"DeleteLine":          (*View).DeleteLine,
-	"MoveLinesUp":         (*View).MoveLinesUp,
-	"MoveLinesDown":       (*View).MoveLinesDown,
-	"IndentSelection":     (*View).IndentSelection,
-	"OutdentSelection":    (*View).OutdentSelection,
-	"OutdentLine":         (*View).OutdentLine,
-	"Paste":               (*View).Paste,
-	"PastePrimary":        (*View).PastePrimary,
-	"SelectAll":           (*View).SelectAll,
-	"OpenFile":            (*View).OpenFile,
-	"Start":               (*View).Start,
-	"End":                 (*View).End,
-	"PageUp":              (*View).PageUp,
-	"PageDown":            (*View).PageDown,
-	"HalfPageUp":          (*View).HalfPageUp,
-	"HalfPageDown":        (*View).HalfPageDown,
-	"StartOfLine":         (*View).StartOfLine,
-	"EndOfLine":           (*View).EndOfLine,
-	"ToggleHelp":          (*View).ToggleHelp,
-	"ToggleRuler":         (*View).ToggleRuler,
-	"JumpLine":            (*View).JumpLine,
-	"ClearStatus":         (*View).ClearStatus,
-	"ShellMode":           (*View).ShellMode,
-	"CommandMode":         (*View).CommandMode,
-	"Escape":              (*View).Escape,
-	"Quit":                (*View).Quit,
-	"QuitAll":             (*View).QuitAll,
-	"AddTab":              (*View).AddTab,
-	"PreviousTab":         (*View).PreviousTab,
-	"NextTab":             (*View).NextTab,
-	"NextSplit":           (*View).NextSplit,
-	"PreviousSplit":       (*View).PreviousSplit,
-	"Unsplit":             (*View).Unsplit,
-	"VSplit":              (*View).VSplitBinding,
-	"HSplit":              (*View).HSplitBinding,
-	"ToggleMacro":         (*View).ToggleMacro,
-	"PlayMacro":           (*View).PlayMacro,
-
-	// This was changed to InsertNewline but I don't want to break backwards compatibility
-	"InsertEnter": (*View).InsertNewline,
-}
 
 // PreActionCall executes the lua pre callback if possible
 func PreActionCall(funcName string, view *View) bool {
@@ -141,9 +60,9 @@ func (v *View) DoActions(actions string) bool {
 	relocate := false
 
 	for _, action := range strings.Split(actions, ",") {
-		coreAction, ok := actionToFn[action]
+		_, ok := reflect.TypeOf(v).MethodByName(action)
 		if ok {
-			relocate = v.DoCoreAction(coreAction, action) || relocate
+			relocate = reflect.ValueOf(v).MethodByName(action).Call([]reflect.Value{})[0].Bool() || relocate
 		} else {
 			relocate = LuaAction(action) || relocate
 		}
@@ -403,6 +322,11 @@ func (v *View) InsertNewline() bool {
 	v.Cursor.LastVisualX = v.Cursor.GetVisualX()
 
 	return true
+}
+
+// InsertEnter calls InsertNewline for backwards compatability
+func (v *View) InsertEnter() bool {
+	return v.InsertNewline()
 }
 
 // Backspace deletes the previous character
@@ -1232,11 +1156,10 @@ func (v *View) PlayMacro() bool {
 					TermMessage(err)
 				}
 			}
-		case func(*View, bool) bool:
-			t(v, true)
+		case string:
+			v.DoActions(string(t))
 		}
 	}
-
 	return true
 }
 
