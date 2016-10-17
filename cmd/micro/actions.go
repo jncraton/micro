@@ -129,15 +129,14 @@ func PostActionCall(funcName string, view *View) bool {
 // because the action to function map isn't available at this level
 func (v *View) DoCoreAction(fn func(*View) bool, action string) bool {
 	if PreActionCall(action, v) {
-		ret := fn(v)
-		PostActionCall(action, v)
-		return ret
-	} else {
-		return false
+		relocate := fn(v)
+		return PostActionCall(action, v) || relocate
 	}
+	
+	return false
 }
 
-// Performs view actions (e.g. "IndentSelection,InsertTab")
+// DoActions Performs view actions (e.g. "IndentSelection,InsertTab")
 func (v *View) DoActions(actions string) bool {
 	relocate := false
 
