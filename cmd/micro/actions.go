@@ -44,6 +44,7 @@ func PostActionCall(funcName string, view *View) bool {
 }
 
 // DoActions Performs view actions (e.g. "IndentSelection,InsertTab")
+// This handles pre and post actions for plugins
 func (v *View) DoActions(actions string) bool {
 	relocate := false
 
