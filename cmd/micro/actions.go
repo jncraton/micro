@@ -1118,6 +1118,34 @@ func (v *View) OpenFile(usePlugin bool) bool {
 	return false
 }
 
+// GotoAnything opens a new file in the buffer
+func (v *View) GotoAnything(usePlugin bool) bool {
+	if usePlugin && !PreActionCall("GotoAnything", v) {
+		return false
+	}
+
+	if v.CanClose() {
+		thing, canceled := messenger.Prompt("Goto Anything: ", "GotoAnything", FileCompletion)
+		if canceled {
+			return false
+		}
+
+		thing = strings.Join(SplitCommandArgs(thing), " ")
+
+		if line, err := strconv.Atoi(thing); err == nil {
+			v.JumpLineNum(line - 1)
+		} else {
+			v.Open(thing)
+		}
+
+		if usePlugin {
+			return PostActionCall("GotoAnything", v)
+		}
+		return true
+	}
+	return false
+}
+
 // Start moves the viewport to the start of the buffer
 func (v *View) Start(usePlugin bool) bool {
 	if usePlugin && !PreActionCall("Start", v) {
@@ -1284,6 +1312,17 @@ func (v *View) ToggleRuler(usePlugin bool) bool {
 	return false
 }
 
+// JumpLineN jumps to line num and moves the view accordingly.
+func (v *View) JumpLineNum(num int) bool {
+	if num < v.Buf.NumLines && num >= 0 {
+		v.Cursor.X = 0
+		v.Cursor.Y = num
+		return true
+	}
+
+	return false
+}
+
 // JumpLine jumps to a line and moves the view accordingly.
 func (v *View) JumpLine(usePlugin bool) bool {
 	if usePlugin && !PreActionCall("JumpLine", v) {
@@ -1302,10 +1341,7 @@ func (v *View) JumpLine(usePlugin bool) bool {
 		return false
 	}
 	// Move cursor and view if possible.
-	if lineint < v.Buf.NumLines && lineint >= 0 {
-		v.Cursor.X = 0
-		v.Cursor.Y = lineint
-
+	if v.JumpLineNum(lineint) {
 		if usePlugin {
 			return PostActionCall("JumpLine", v)
 		}
