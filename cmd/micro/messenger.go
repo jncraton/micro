@@ -189,6 +189,7 @@ type Completion int
 const (
 	NoCompletion Completion = iota
 	FileCompletion
+	GotoAnythingCompletion
 	CommandCompletion
 	HelpCompletion
 	OptionCompletion
@@ -251,6 +252,8 @@ func (m *Messenger) Prompt(prompt, historyType string, completionTypes ...Comple
 				var chosen string
 				if completionType == FileCompletion {
 					chosen, suggestions = FileComplete(currentArg)
+				} else if completionType == GotoAnythingCompletion {
+					chosen, suggestions = GotoAnythingComplete(currentArg)
 				} else if completionType == CommandCompletion {
 					chosen, suggestions = CommandComplete(currentArg)
 				} else if completionType == HelpCompletion {

@@ -1125,7 +1125,7 @@ func (v *View) GotoAnything(usePlugin bool) bool {
 	}
 
 	if v.CanClose() {
-		thing, canceled := messenger.Prompt("Goto Anything: ", "GotoAnything", FileCompletion)
+		thing, canceled := messenger.Prompt("Goto Anything: ", "GotoAnything", GotoAnythingCompletion)
 		if canceled {
 			return false
 		}
