@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -1135,7 +1136,8 @@ func (v *View) GotoAnything(usePlugin bool) bool {
 		if line, err := strconv.Atoi(thing); err == nil {
 			v.JumpLineNum(line - 1)
 		} else {
-			v.Open(thing)
+			filename := filepath.Join(FindProjectRoot(v.Buf.Path), thing)
+			v.Open(filename)
 		}
 
 		if usePlugin {

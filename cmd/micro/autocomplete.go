@@ -16,49 +16,19 @@ var pluginCompletions []func(string) []string
 
 // GotoAnythingComplete autocompletes filenames in a project by substring
 func GotoAnythingComplete(input string) (string, []string) {
-	var sep string = string(os.PathSeparator)
-	dirs := strings.Split(input, sep)
-
-	var files []os.FileInfo
-	var err error
-	if len(dirs) > 1 {
-		home, _ := homedir.Dir()
-
-		directories := strings.Join(dirs[:len(dirs)-1], sep) + sep
-
-		if strings.HasPrefix(directories, "~") {
-			directories = strings.Replace(directories, "~", home, 1)
-		}
-		files, err = ioutil.ReadDir(directories)
-	} else {
-		files, err = ioutil.ReadDir(".")
-	}
+	files := ListProjectFiles(".", 100)
 
 	var suggestions []string
-	if err != nil {
-		return "", suggestions
-	}
-	for _, f := range files {
-		name := f.Name()
-		if f.IsDir() {
-			name += sep
-		}
-		if strings.HasPrefix(name, dirs[len(dirs)-1]) {
-			suggestions = append(suggestions, name)
+
+	for _, file := range files {
+		if strings.Contains(file, input) {
+			suggestions = append(suggestions, file)
 		}
 	}
 
 	var chosen string
 	if len(suggestions) == 1 {
-		if len(dirs) > 1 {
-			chosen = strings.Join(dirs[:len(dirs)-1], sep) + sep + suggestions[0]
-		} else {
-			chosen = suggestions[0]
-		}
-	} else {
-		if len(dirs) > 1 {
-			chosen = strings.Join(dirs[:len(dirs)-1], sep) + sep
-		}
+		chosen = suggestions[0]
 	}
 
 	return chosen, suggestions
