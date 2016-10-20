@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -20,13 +21,19 @@ func GotoAnythingComplete(input string) (string, []string) {
 
 	var suggestions []string
 
+	filePart := strings.Split(input, ":")[0]
+	filePart = strings.Split(filePart, "@")[0]
+	filePart = strings.Split(filePart, "#")[0]
+
+	withinFile := strings.Replace(input, filePart, "", 1)
+
 	for _, file := range files {
-		if strings.Contains(file, input) {
-			suggestions = append(suggestions, file)
+		if strings.Contains(file, filePart) {
+			suggestions = append(suggestions, fmt.Sprint(file, withinFile))
 		}
 	}
 
-	var chosen string
+	chosen := ""
 	if len(suggestions) == 1 {
 		chosen = suggestions[0]
 	}

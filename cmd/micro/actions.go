@@ -1135,11 +1135,34 @@ func (v *View) GotoAnything(usePlugin bool) bool {
 
 		thing = strings.Join(SplitCommandArgs(thing), " ")
 
-		if line, err := strconv.Atoi(thing); err == nil {
-			v.JumpLineNum(line - 1)
-		} else {
-			filename := filepath.Join(FindProjectRoot(v.Buf.Path), thing)
+		filename := thing
+		line := -1
+		symbol := ""
+
+		if strings.Contains(thing, ":") {
+			filename = strings.SplitN(thing, ":", 2)[0]
+			linePart := strings.SplitN(thing, ":", 2)[1]
+			if l, err := strconv.Atoi(linePart); err == nil {
+				line = l - 1
+			}
+		}
+
+		if strings.Contains(thing, "@") {
+			filename = strings.SplitN(thing, "@", 2)[0]
+			symbol = strings.SplitN(thing, "@", 2)[1]
+		}
+
+		if len(filename) > 0 {
+			filepath.Join(FindProjectRoot(v.Buf.Path), filename)
 			v.Open(filename)
+		}
+
+		if line > 0 {
+			v.JumpLineNum(line)
+		}
+
+		if len(symbol) > 0 {
+			v.JumpLineNum(line)
 		}
 
 		if usePlugin {
