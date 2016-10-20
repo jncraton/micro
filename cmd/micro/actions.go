@@ -1138,6 +1138,7 @@ func (v *View) GotoAnything(usePlugin bool) bool {
 		filename := thing
 		line := -1
 		symbol := ""
+		term := ""
 
 		if strings.Contains(thing, ":") {
 			filename = strings.SplitN(thing, ":", 2)[0]
@@ -1152,6 +1153,11 @@ func (v *View) GotoAnything(usePlugin bool) bool {
 			symbol = strings.SplitN(thing, "@", 2)[1]
 		}
 
+		if strings.Contains(thing, "#") {
+			filename = strings.SplitN(thing, "#", 2)[0]
+			term = strings.SplitN(thing, "#", 2)[1]
+		}
+
 		if len(filename) > 0 {
 			filepath.Join(FindProjectRoot(v.Buf.Path), filename)
 			v.Open(filename)
@@ -1162,7 +1168,11 @@ func (v *View) GotoAnything(usePlugin bool) bool {
 		}
 
 		if len(symbol) > 0 {
-			v.JumpLineNum(line)
+			Search(symbol, v, true)
+		}
+
+		if len(term) > 0 {
+			Search(term, v, true)
 		}
 
 		if usePlugin {
