@@ -36,6 +36,8 @@ func GotoAnythingComplete(input string) (string, []string) {
 	chosen := ""
 	if len(suggestions) == 1 {
 		chosen = suggestions[0]
+	} else if len(filePart) == 0 {
+		chosen = withinFile
 	}
 
 	return chosen, suggestions
