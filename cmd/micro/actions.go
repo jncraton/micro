@@ -1131,6 +1131,8 @@ func (v *View) GotoAnything(usePlugin bool) bool {
 			return false
 		}
 
+		thing, _ = GotoAnythingComplete(thing)
+
 		thing = strings.Join(SplitCommandArgs(thing), " ")
 
 		if line, err := strconv.Atoi(thing); err == nil {
