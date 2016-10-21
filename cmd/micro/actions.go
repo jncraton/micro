@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -1168,7 +1169,7 @@ func (v *View) GotoAnything(usePlugin bool) bool {
 		}
 
 		if len(symbol) > 0 {
-			Search(symbol, v, true)
+			Search(fmt.Sprint(v.Buf.Settings["symbolprefix"], symbol), v, true)
 		}
 
 		if len(term) > 0 {
