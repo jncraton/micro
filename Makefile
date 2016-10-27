@@ -46,5 +46,8 @@ test:
 	go get -d ./cmd/micro
 	go test ./cmd/micro
 
+lint:
+	golint ./cmd/micro/*.go
+
 clean:
 	rm -f micro
