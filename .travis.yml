@@ -1,4 +1,2 @@
 language: go
-script: 
-    make test;
-    make lint;
+script: make test
