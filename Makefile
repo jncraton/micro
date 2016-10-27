@@ -42,7 +42,7 @@ runtime:
 	$(GOBIN)/go-bindata -nometadata -o runtime.go runtime/...
 	mv runtime.go cmd/micro
 
-test: lint
+test:
 	go get -d ./cmd/micro
 	go test ./cmd/micro
 

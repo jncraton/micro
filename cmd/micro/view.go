@@ -11,6 +11,7 @@ import (
 	"github.com/zyedidia/tcell"
 )
 
+// ViewType enumerates the available views
 type ViewType int
 
 const (
@@ -322,6 +323,7 @@ func (v *View) GetSoftWrapLocation(vx, vy int) (int, int) {
 	return 0, 0
 }
 
+// Bottomline returns the line number of the bottom line in view
 func (v *View) Bottomline() int {
 	screenX, screenY := 0, 0
 	numLines := 0
