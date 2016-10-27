@@ -26,22 +26,27 @@ type StrCommand struct {
 
 var commands map[string]Command
 
-var commandActions = map[string]func([]string){
-	"Set":       Set,
-	"SetLocal":  SetLocal,
-	"Show":      Show,
-	"Run":       Run,
-	"Bind":      Bind,
-	"Quit":      Quit,
-	"Save":      Save,
-	"Replace":   Replace,
-	"VSplit":    VSplit,
-	"HSplit":    HSplit,
-	"Tab":       NewTab,
-	"Help":      Help,
-	"Eval":      Eval,
-	"ToggleLog": ToggleLog,
-	"Plugin":    PluginCmd,
+var commandActions map[string]func([]string)
+
+func init() {
+	commandActions = map[string]func([]string){
+		"Set":       Set,
+		"SetLocal":  SetLocal,
+		"Show":      Show,
+		"Run":       Run,
+		"Bind":      Bind,
+		"Quit":      Quit,
+		"Save":      Save,
+		"Replace":   Replace,
+		"VSplit":    VSplit,
+		"HSplit":    HSplit,
+		"Tab":       NewTab,
+		"Help":      Help,
+		"Eval":      Eval,
+		"ToggleLog": ToggleLog,
+		"Plugin":    PluginCmd,
+		"Reload":    Reload,
+	}
 }
 
 // InitCommands initializes the default commands
@@ -89,6 +94,7 @@ func DefaultCommands() map[string]StrCommand {
 		"eval":     {"Eval", []Completion{NoCompletion}},
 		"log":      {"ToggleLog", []Completion{NoCompletion}},
 		"plugin":   {"Plugin", []Completion{PluginCmdCompletion, PluginNameCompletion}},
+		"reload":   {"Reload", []Completion{NoCompletion}},
 	}
 }
 
@@ -162,6 +168,15 @@ func PluginCmd(args []string) {
 					ToggleLog([]string{})
 				}
 			}
+		case "available":
+			packages := GetAllPluginPackages()
+			messenger.AddLog("Available Plugins:")
+			for _, pkg := range packages {
+				messenger.AddLog(pkg.Name)
+			}
+			if CurView().Type != vtLog {
+				ToggleLog([]string{})
+			}
 		}
 	} else {
 		messenger.Error("Not enough arguments")
@@ -173,9 +188,18 @@ func ToggleLog(args []string) {
 	if CurView().Type != vtLog {
 		CurView().HSplit(buffer)
 		CurView().Type = vtLog
+		RedrawAll()
+		buffer.Cursor.Loc = buffer.Start()
+		CurView().Relocate()
+		buffer.Cursor.Loc = buffer.End()
+		CurView().Relocate()
 	} else {
 		CurView().Quit(true)
 	}
+}
+
+func Reload(args []string) {
+	LoadAll()
 }
 
 // Help tries to open the given help page in a horizontal split
