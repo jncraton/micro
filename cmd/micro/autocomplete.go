@@ -34,6 +34,18 @@ func GotoAnythingComplete(input string) (string, []string) {
 	}
 
 	chosen := ""
+
+	if len(suggestions) == 0 {
+		chosen, files = FileComplete(filePart)
+		if len(files) > 1 {
+			for _, file := range files {
+				suggestions = append(suggestions, fmt.Sprint(file, withinFile))
+			}
+		} else {
+			suggestions = append(suggestions, fmt.Sprint(chosen, withinFile))
+		}
+	}
+
 	if len(suggestions) == 1 {
 		chosen = suggestions[0]
 	} else if len(filePart) == 0 {

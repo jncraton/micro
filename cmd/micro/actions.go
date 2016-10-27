@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -1160,7 +1159,6 @@ func (v *View) GotoAnything(usePlugin bool) bool {
 		}
 
 		if len(filename) > 0 {
-			filepath.Join(FindProjectRoot(v.Buf.Path), filename)
 			v.Open(filename)
 		}
 
