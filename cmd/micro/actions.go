@@ -1168,6 +1168,8 @@ func (v *View) GotoAnything(usePlugin bool) bool {
 
 		if len(symbol) > 0 {
 			Search(fmt.Sprint(v.Buf.Settings["symbolprefix"], symbol), v, true)
+			v.deselect(0)
+			v.Cursor.Start()
 		}
 
 		if len(term) > 0 {
