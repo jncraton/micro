@@ -1119,6 +1119,52 @@ func (v *View) OpenFile(usePlugin bool) bool {
 	return false
 }
 
+// GotoAnythingRaw
+func (v *View) GotoAnythingRaw(thing string) string {
+	filename := thing
+	line := -1
+	symbol := ""
+	term := ""
+
+	if strings.Contains(thing, ":") {
+		filename = strings.SplitN(thing, ":", 2)[0]
+		linePart := strings.SplitN(thing, ":", 2)[1]
+		if l, err := strconv.Atoi(linePart); err == nil {
+			line = l - 1
+		}
+	}
+
+	if strings.Contains(thing, "@") {
+		filename = strings.SplitN(thing, "@", 2)[0]
+		symbol = strings.SplitN(thing, "@", 2)[1]
+	}
+
+	if strings.Contains(thing, "#") {
+		filename = strings.SplitN(thing, "#", 2)[0]
+		term = strings.SplitN(thing, "#", 2)[1]
+	}
+
+	if len(filename) > 0 {
+		v.Open(filename)
+	}
+
+	if line > 0 {
+		v.JumpLineNum(line)
+	}
+
+	if len(symbol) > 0 {
+		Search(fmt.Sprint(v.Buf.Settings["symbolprefix"], symbol), v, true)
+		v.deselect(0)
+		v.Cursor.Start()
+	}
+
+	if len(term) > 0 {
+		Search(term, v, true)
+	}
+
+	return filename
+}
+
 // GotoAnything opens a new file in the buffer
 func (v *View) GotoAnything(usePlugin bool) bool {
 	if usePlugin && !PreActionCall("GotoAnything", v) {
@@ -1135,46 +1181,7 @@ func (v *View) GotoAnything(usePlugin bool) bool {
 
 		thing = strings.Join(SplitCommandArgs(thing), " ")
 
-		filename := thing
-		line := -1
-		symbol := ""
-		term := ""
-
-		if strings.Contains(thing, ":") {
-			filename = strings.SplitN(thing, ":", 2)[0]
-			linePart := strings.SplitN(thing, ":", 2)[1]
-			if l, err := strconv.Atoi(linePart); err == nil {
-				line = l - 1
-			}
-		}
-
-		if strings.Contains(thing, "@") {
-			filename = strings.SplitN(thing, "@", 2)[0]
-			symbol = strings.SplitN(thing, "@", 2)[1]
-		}
-
-		if strings.Contains(thing, "#") {
-			filename = strings.SplitN(thing, "#", 2)[0]
-			term = strings.SplitN(thing, "#", 2)[1]
-		}
-
-		if len(filename) > 0 {
-			v.Open(filename)
-		}
-
-		if line > 0 {
-			v.JumpLineNum(line)
-		}
-
-		if len(symbol) > 0 {
-			Search(fmt.Sprint(v.Buf.Settings["symbolprefix"], symbol), v, true)
-			v.deselect(0)
-			v.Cursor.Start()
-		}
-
-		if len(term) > 0 {
-			Search(term, v, true)
-		}
+		v.GotoAnythingRaw(thing)
 
 		if usePlugin {
 			return PostActionCall("GotoAnything", v)
