@@ -1,2 +1,7 @@
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y expect
 language: go
-script: make test
+script: 
+  - make test
+  - make e2etest

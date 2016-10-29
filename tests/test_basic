@@ -1,0 +1,26 @@
+#!/usr/bin/expect -f
+
+# Very basic test to add text to a file and save it
+
+set send_slow {1 .05}
+
+# Clean out old test output
+spawn rm -f tests/test_basic.out
+wait
+
+# Start up micro
+spawn ./micro tests/test_basic.out
+expect test_basic
+
+# Process characters as they come back
+expect_background -re .
+
+# Send commands
+send -s -- "Enter some text.\r\rAnd some more on a new line."
+
+# CtrlS then CtrlQ to save and quit
+send -s -- "\023\021"
+wait
+
+# Diff expected results with the output file to show that everything is good
+overlay sh -c "printf \"Enter some text.\n\nAnd some more on a new line.\" | diff tests/test_basic.out -"

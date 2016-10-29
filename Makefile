@@ -46,5 +46,9 @@ test:
 	go get -d ./cmd/micro
 	go test ./cmd/micro
 
+e2etest: build
+	tests/test_basic
+	tests/test_duplicate_line
+
 clean:
 	rm -f micro

@@ -1,0 +1,30 @@
+#!/usr/bin/expect -f
+
+# Tests line duplication
+
+set send_slow {1 .05}
+
+# Clean out old test output
+spawn rm -f tests/test_duplicate_line.out
+wait
+
+# Start up micro
+spawn ./micro tests/test_duplicate_line.out
+expect test_duplicate_line
+
+# Process characters as they come back
+expect_background -re .
+
+# Send commands
+send -s -- "A line."
+
+# CtrlD duplicate the line
+send -s -- "\004"
+sleep .5
+
+# CtrlS then CtrlQ to save and quit
+send -s -- "\023\021"
+wait
+
+# Diff expected results with the output file to show that everything is good
+overlay sh -c "printf \"A line.\nA line.\" | diff tests/test_duplicate_line.out -"
