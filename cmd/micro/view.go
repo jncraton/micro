@@ -160,7 +160,9 @@ func (v *View) paste(clip string) {
 		v.Cursor.DeleteSelection()
 		v.Cursor.ResetSelection()
 	}
-	clip = strings.Replace(clip, "\n", "\n"+leadingWS, -1)
+	if len(clip) > 0 && clip[0] != ' ' && clip[0] != '\t' {
+		clip = strings.Replace(clip, "\n", "\n"+leadingWS, -1)
+	}
 	v.Buf.Insert(v.Cursor.Loc, clip)
 	v.Cursor.Loc = v.Cursor.Loc.Move(Count(clip), v.Buf)
 	v.freshClip = false
